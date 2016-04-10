@@ -11,9 +11,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 
-/**
- * Created by Cody on 3/16/2016.
- */
 public class ContactList {
     Context mContext;
     ArrayList<String> contacts;
@@ -21,12 +18,17 @@ public class ContactList {
 
     public ContactList(Context context){
         mContext = context;
-        contacts = new ArrayList<String>();
+        contacts = new ArrayList<>();
 
     }
 
     public Cursor getContactCursor(int eventType)
     {
+        if (eventType != ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY &&
+                eventType != ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY) {
+            new Error("Incorrect type in getContactCursor").printStackTrace();
+        }
+
         // set uri
         Uri uri =  ContactsContract.Data.CONTENT_URI;
         String[] proj = {
@@ -60,9 +62,12 @@ public class ContactList {
     public void sortList(int timeFrame) {
         // sort and limit by date
 
+        if (contacts == null)
+            new Error("Contacts not set in sortList call").printStackTrace();
+
         String today = getDate(0);
         contacts.add(today);
-        ArrayList<String> newList = new ArrayList<String>();
+        ArrayList<String> newList = new ArrayList<>();
 
         if (timeFrame > 0) {
             int todayPOS =-1, endPOS =-1;

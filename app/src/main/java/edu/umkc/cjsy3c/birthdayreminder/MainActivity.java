@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         // display the list and start the notification alarm
         loadList();
+
         if (pref.getBoolean("Notify", true))
             scheduleAlarm();
         else
@@ -54,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
         contacts.findBirthdays(timeFrame, show);
         lv = (ListView) findViewById(R.id.listView);
 
+        //Assert Contacts is not empty
+        if (contacts.getContacts() == null)
+            new Error("Contacts not set").printStackTrace();
 
         la = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, contacts.getContacts());
         lv.setAdapter(la);
