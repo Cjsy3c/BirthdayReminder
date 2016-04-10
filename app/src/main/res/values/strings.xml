@@ -1,0 +1,9 @@
+<resources>
+<string name="app_name">Birthday Reminder</string>
+<string name="about">This app was created by Cody S.</string>
+<string name="title_activity_about_">About This App</string>
+<string name="aboutTitle">About</string>
+<string name="Settings">Settings</string>
+<string name="title_activity_settings">SettingsActivity</string>
+<string name="action_settings">Settings</string>
+</resources>
