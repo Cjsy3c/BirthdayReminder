@@ -22,18 +22,19 @@ public class DailyBirthdayNotification extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-
+        // set up notification service, and cancel previous notification
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(0);
 
         String temp;
         ArrayList<String> arr = birthdaysToday();
+        // check if there are events to display
         if (arr == null)
             return;
         if( arr.size() == 1)
-            temp = arr.get(0).substring(5).trim() + " has a Birthday Today";
+            temp = arr.get(0).substring(5).trim() + " has a Birthday Today";    // show "[name] has a Birthday Today"
         else
-            temp = "There are " + arr.size() + " Events Today";
+            temp = "There are " + arr.size() + " Events Today";     // Show a count of events today
 
         // intent to start up app
         Intent i = new Intent(this,MainActivity.class);
@@ -41,7 +42,7 @@ public class DailyBirthdayNotification extends IntentService {
         pIntent = PendingIntent.getActivity(getApplicationContext(),0,i , PendingIntent.FLAG_UPDATE_CURRENT);
 
 
-        ///////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////// set notification
         Notification notify = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(temp)
@@ -50,18 +51,25 @@ public class DailyBirthdayNotification extends IntentService {
                 //.setOngoing(true)         // set non removable
                 .build();
 
-        mNotificationManager.notify(0, notify);
+        mNotificationManager.notify(0, notify); // show notification
 
     }
 
+    /**
+     * Use ContactList to find all birthdays that are today.
+     *
+     * @return List of Birthdays today
+     */
     public ArrayList<String> birthdaysToday()
     {
         // null means none today
 
         ContactList temp = new ContactList(this);
-
+        // pull settings for anniversaries
         boolean show = getSharedPreferences("file", Context.MODE_PRIVATE).getBoolean("ShowAnn", false);
         temp.findBirthdays(1, show);
+
+        // check if array is actually empty.
         if ("No Birthdays found in the next 1 days".equals(temp.getContacts().get(0)))
             return null;
         else

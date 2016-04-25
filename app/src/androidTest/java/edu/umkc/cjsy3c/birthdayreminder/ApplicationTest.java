@@ -9,5 +9,8 @@ import android.test.ApplicationTestCase;
 public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
         super(Application.class);
+        ContactList c = new ContactList(getContext());
+        c.findBirthdays(0, true);
+
     }
 }
