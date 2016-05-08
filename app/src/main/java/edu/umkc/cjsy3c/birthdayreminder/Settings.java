@@ -18,7 +18,13 @@ public class Settings extends AppCompatActivity {
     ArrayAdapter<String> spinAdapter;
     private static Activity mAct;
     private static int i = 0;
-    CheckBox cb, anniversary;
+    CheckBox cb, anniversary, notifyOnStart;
+    // shared preferences
+    public static String notifyPref = "Notify";
+    public static String anniversaryPref = "ShowAnn";
+    public static String notifyNowPref = "NotifyNow";
+    public static String filePref = "file";
+    public static String timeZonePref = "disp";
 
 
     @Override
@@ -26,14 +32,23 @@ public class Settings extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        // set the checked box
+        // get the check boxes
         cb = (CheckBox) findViewById(R.id.checkBox);
-        boolean checked = getSharedPreferences("file", Context.MODE_PRIVATE).getBoolean("Notify", true);
+        notifyOnStart = (CheckBox) findViewById(R.id.NotifyOnOpenCB);
+        anniversary = (CheckBox) findViewById(R.id.anniversaryCheckBox);
+
+        // check file for settings to display
+        boolean checked = getSharedPreferences(filePref, Context.MODE_PRIVATE).getBoolean(notifyPref, true);
         cb.setChecked(checked);
 
-        anniversary = (CheckBox) findViewById(R.id.anniversaryCheckBox);
-        checked = getSharedPreferences("file", Context.MODE_PRIVATE).getBoolean("ShowAnn", false);
+        // check file for anniversaries setting
+        checked = getSharedPreferences(filePref, Context.MODE_PRIVATE).getBoolean(anniversaryPref, false);
         anniversary.setChecked(checked);
+
+        // check file for Instant Notification setting
+        checked = getSharedPreferences(filePref, Context.MODE_PRIVATE).getBoolean(notifyNowPref, false);
+        notifyOnStart.setChecked(checked);
+
 
         mAct = this;
         // create spinner
@@ -48,8 +63,8 @@ public class Settings extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // set how many days to display
-                
-                SharedPreferences pref = getSharedPreferences("file",Context.MODE_PRIVATE);
+
+                SharedPreferences pref = getSharedPreferences(filePref, Context.MODE_PRIVATE);
                 //int i = 0;
                 switch (position) {
                     case 0:     // show all
@@ -71,10 +86,8 @@ public class Settings extends AppCompatActivity {
                         i = 0;
                         break;
                 }
-                pref.edit().putInt("disp", i).commit();
+                pref.edit().putInt(timeZonePref, i).commit();
 
-
-                //System.out.println("Selected item i = "+i);
             }
 
             @Override
@@ -90,9 +103,12 @@ public class Settings extends AppCompatActivity {
     @Override
     protected void onPause() {
         // save notification settings
-        SharedPreferences pref = getSharedPreferences("file", Context.MODE_PRIVATE);
-        pref.edit().putBoolean("Notify", cb.isChecked());
-        pref.edit().putBoolean("ShowAnn", anniversary.isChecked()).commit();
+        SharedPreferences pref = getSharedPreferences(filePref, Context.MODE_PRIVATE);
+        SharedPreferences.Editor e = pref.edit();
+        e.putBoolean(notifyPref, cb.isChecked());
+        e.putBoolean(notifyNowPref, notifyOnStart.isChecked());
+        e.putBoolean(anniversaryPref, anniversary.isChecked());
+        e.commit();
 
         super.onPause();
     }

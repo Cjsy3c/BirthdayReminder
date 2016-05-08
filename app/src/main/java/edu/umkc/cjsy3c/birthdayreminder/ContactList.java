@@ -255,7 +255,7 @@ public class ContactList {
      */
     public ArrayList<String> getContacts() {
         if (contacts == null)
-            findContacts();
+            contacts = new ArrayList<>();
         return contacts;
     }
 }

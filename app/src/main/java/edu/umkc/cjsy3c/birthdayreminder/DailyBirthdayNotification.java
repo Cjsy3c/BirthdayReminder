@@ -66,11 +66,16 @@ public class DailyBirthdayNotification extends IntentService {
 
         ContactList temp = new ContactList(this);
         // pull settings for anniversaries
-        boolean show = getSharedPreferences("file", Context.MODE_PRIVATE).getBoolean("ShowAnn", false);
+        boolean show = getSharedPreferences(Settings.filePref, Context.MODE_PRIVATE).getBoolean(Settings.anniversaryPref, false);
         temp.findBirthdays(1, show);
 
         // check if array is actually empty.
-        if ("No Birthdays found in the next 1 days".equals(temp.getContacts().get(0)))
+        String cmp = temp.getContacts().get(0);
+
+        // format is either "01-01 name"
+        // or "No Birthdays Found"
+        // so if the first character is not a digit then there are none
+        if (!Character.isDigit(cmp.charAt(0)))
             return null;
         else
             return temp.getContacts();

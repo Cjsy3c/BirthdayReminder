@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,10 +35,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        SharedPreferences pref = getSharedPreferences("file", Context.MODE_PRIVATE);
+        SharedPreferences pref = getSharedPreferences(Settings.filePref, Context.MODE_PRIVATE);
         // pull limit from preferences
-        timeFrame = pref.getInt("disp", 0);
-        notify = pref.getBoolean("Notify", true);
+        timeFrame = pref.getInt(Settings.timeZonePref, 0);
+        notify = pref.getBoolean(Settings.notifyPref, true);
+        boolean notifyNOW = pref.getBoolean(Settings.notifyNowPref, false);
         pref = null;    // close preferences
 
         if (timeFrame > 1)
@@ -50,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
         // display the list and start the notification alarm
         loadList();
 
+        if (notifyNOW)
+            createNotification();
 
         if (notify)
             scheduleAlarm();
@@ -64,8 +68,28 @@ public class MainActivity extends AppCompatActivity {
     public void loadList() {
         contacts = new ContactList(getApplicationContext());
 
-        boolean show = getSharedPreferences("file", Context.MODE_PRIVATE).getBoolean("ShowAnn", false);
-        contacts.findBirthdays(timeFrame, show);
+        ArrayList<String> listOfContacts;
+        boolean show = getSharedPreferences(Settings.filePref, Context.MODE_PRIVATE).getBoolean(Settings.anniversaryPref, false);
+        try {
+            contacts.findBirthdays(timeFrame, show);
+        } catch (SecurityException secEx) {
+            //secEx.printStackTrace();
+            System.out.println("Invalid Contacts Database");
+
+            listOfContacts = contacts.getContacts();
+            if (listOfContacts.size() == 0) {
+                // this version of android does not store birthdays in the contacts, so it crashes
+                listOfContacts.add("Your Phone does not store Birthdays in the Contacts, so this app will not function properly");
+                // disable functions
+                SharedPreferences pref = getSharedPreferences(Settings.filePref, Context.MODE_PRIVATE);
+                SharedPreferences.Editor e = pref.edit();
+                e.putBoolean(Settings.notifyPref, false);
+                e.putBoolean(Settings.anniversaryPref, false);
+                e.putBoolean(Settings.notifyNowPref, false);
+                e.commit();
+            }
+
+        }
 
 
         lv = (ListView) findViewById(R.id.listView);
@@ -75,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
         contacts = null;
         lv.setAdapter(la);
         lv.setLongClickable(true);
+
 
         // set on click
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -91,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 message.setPositiveButton("Send Message",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                // button click
+                                // button click send sms
 
                                 Intent sendIntent = new Intent(Intent.ACTION_VIEW);
                                 sendIntent.setData(Uri.parse("sms:"));
@@ -155,6 +180,15 @@ public class MainActivity extends AppCompatActivity {
         alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pIntent);
 
     }
+
+    /**
+     * used for demonstration in class
+     */
+    public void createNotification() {
+
+        startService(new Intent(this, DailyBirthdayNotification.class));
+    }
+
 
     /**
      * cancel the alarm set
